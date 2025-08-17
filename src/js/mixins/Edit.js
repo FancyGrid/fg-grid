@@ -171,6 +171,10 @@
                 memorizeChange(value);
               },
               onEnter(value){
+                if(type === 'number' && value !== ''){
+                  value = Number(value);
+                }
+
                 if(value !== undefined){
                   memorizeChange(value);
                 }

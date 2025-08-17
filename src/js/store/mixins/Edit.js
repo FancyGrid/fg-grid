@@ -15,7 +15,15 @@
           item[p] = key[p];
         }
       } else {
+        const oldValue = item[key];
         item[key] = value;
+        this.onChange({
+          id,
+          key,
+          item,
+          value,
+          oldValue
+        });
       }
 
       return item;

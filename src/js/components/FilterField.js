@@ -211,8 +211,6 @@
       let left = elRect.left + window.scrollX;
       let width = elRect.width;
 
-      console.log(me.el)
-
       if(width < me.minListWidth){
         width = me.minListWidth;
       }
@@ -451,6 +449,7 @@
 
       if(uncheckedMap.size === 0){
         me.input.value = '';
+        values = [];
       } else {
         const keysAsString = [ ...checkedMap.keys() ].join(',');
 

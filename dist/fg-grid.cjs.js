@@ -629,7 +629,7 @@ Fancy.copyText = (text) => {
 
     prevAction = '';
 
-    constructor({ data, rowGroups, rowGroupExpanded, aggregations, defaultRowGroupSort }) {
+    constructor({ data, rowGroups, rowGroupExpanded, aggregations, defaultRowGroupSort, onChange }) {
       const me = this;
 
       me.prevAction = '';
@@ -642,6 +642,7 @@ Fancy.copyText = (text) => {
       me.selectedItemsMap = new Map();
       me.selectedRowGroupsChildren = {};
       me.groupDetails = {};
+      me.onChange = onChange;
 
       if (me.data.length && me.rowGroups.length) {
         me.lightSetIds();
@@ -2599,7 +2600,15 @@ Fancy.copyText = (text) => {
           item[p] = key[p];
         }
       } else {
+        const oldValue = item[key];
         item[key] = value;
+        this.onChange({
+          id,
+          key,
+          item,
+          value,
+          oldValue
+        });
       }
 
       return item;
@@ -3488,6 +3497,8 @@ Fancy.copyText = (text) => {
       me.activeCell && me.initKeyNavigation();
 
       me.ons();
+
+      me.onReady?.(me);
     }
     initContainer(renderTo){
       const me = this;
@@ -3801,7 +3812,12 @@ Fancy.copyText = (text) => {
 
       const storeConfig = {
         data: structuredClone(config.data),
-        defaultRowGroupSort: config.defaultRowGroupSort || me.defaultRowGroupSort
+        defaultRowGroupSort: config.defaultRowGroupSort || me.defaultRowGroupSort,
+        onChange(params) {
+          if(params.value !== params.oldValue){
+            me.onChange?.(params);
+          }
+        }
       };
 
       if(rowGroups.length){
@@ -5293,7 +5309,11 @@ Fancy.copyText = (text) => {
         }
 
         if (Object.entries(column.filters || {}).length && column.filters.value !== '') {
-          column.elFilter.classList.remove(HIDDEN);
+          if(Array.isArray(column.filters.value) && column.filters.value.length === 0){
+            column.elFilter.classList.add(HIDDEN);
+          } else {
+            column.elFilter.classList.remove(HIDDEN);
+          }
         } else {
           column.elFilter.classList.add(HIDDEN);
         }
@@ -6273,6 +6293,10 @@ Fancy.copyText = (text) => {
       const me = this;
 
       if (me.columnResizing) return;
+
+      me.bodyEl.querySelectorAll(`.${ROW_HOVER}`).forEach(el => {
+        el.classList.remove(ROW_HOVER);
+      });
 
       event.target.classList.add(ROW_HOVER);
 
@@ -9056,6 +9080,10 @@ Fancy.copyText = (text) => {
                 memorizeChange(value);
               },
               onEnter(value){
+                if(type === 'number' && value !== ''){
+                  value = Number(value);
+                }
+
                 if(value !== undefined){
                   memorizeChange(value);
                 }
@@ -9507,8 +9535,6 @@ Fancy.copyText = (text) => {
       let left = elRect.left + window.scrollX;
       let width = elRect.width;
 
-      console.log(me.el);
-
       if(width < me.minListWidth){
         width = me.minListWidth;
       }
@@ -9747,6 +9773,7 @@ Fancy.copyText = (text) => {
 
       if(uncheckedMap.size === 0){
         me.input.value = '';
+        values = [];
       } else {
         const keysAsString = [ ...checkedMap.keys() ].join(',');
 

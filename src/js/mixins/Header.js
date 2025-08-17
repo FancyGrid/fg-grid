@@ -604,7 +604,11 @@
         }
 
         if (Object.entries(column.filters || {}).length && column.filters.value !== '') {
-          column.elFilter.classList.remove(HIDDEN);
+          if(Array.isArray(column.filters.value) && column.filters.value.length === 0){
+            column.elFilter.classList.add(HIDDEN);
+          } else {
+            column.elFilter.classList.remove(HIDDEN);
+          }
         } else {
           column.elFilter.classList.add(HIDDEN);
         }

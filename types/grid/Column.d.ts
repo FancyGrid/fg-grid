@@ -7,6 +7,14 @@ export interface RenderParams<TData = any> {
   cell: HTMLDivElement;
 }
 
+export interface ChangeParams<TData = any> {
+  item: TData;
+  id: string;
+  key: string;
+  oldValue: string | number | unknown;
+  value: string | number | unknown;
+}
+
 type Currencies = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY';
 
 export interface FormatParams<TData = any> extends RenderParams<TData> {

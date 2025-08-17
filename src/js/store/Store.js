@@ -24,7 +24,7 @@
 
     prevAction = '';
 
-    constructor({ data, rowGroups, rowGroupExpanded, aggregations, defaultRowGroupSort }) {
+    constructor({ data, rowGroups, rowGroupExpanded, aggregations, defaultRowGroupSort, onChange }) {
       const me = this;
 
       me.prevAction = '';
@@ -37,6 +37,7 @@
       me.selectedItemsMap = new Map();
       me.selectedRowGroupsChildren = {};
       me.groupDetails = {};
+      me.onChange = onChange;
 
       if (me.data.length && me.rowGroups.length) {
         me.lightSetIds();

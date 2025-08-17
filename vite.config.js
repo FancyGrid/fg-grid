@@ -3,10 +3,26 @@ import path from 'path';
 import { terser } from 'rollup-plugin-terser';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import fs from 'fs';
-import CleanCSS from 'clean-css';
+
+function checkLogsAndDebuggers() {
+  return {
+    name: 'check-logs-debuggers',
+    generateBundle(_, bundle) {
+      for (const fileName of Object.keys(bundle)) {
+        const chunk = bundle[fileName];
+        if (chunk.type === 'chunk') {
+          if (/console\.log\s*\(/.test(chunk.code) || /\bdebugger\b/.test(chunk.code)) {
+            throw new Error(`🚫 Found console.log or debugger in: ${fileName}`);
+          }
+        }
+      }
+    }
+  };
+}
 
 export default defineConfig({
   plugins: [
+    checkLogsAndDebuggers(),
     viteStaticCopy({
       targets: [
         {
@@ -17,17 +33,36 @@ export default defineConfig({
       ]
     }),
     {
-      name: 'minify-css',
+      name: 'simple-css-minify',
       closeBundle() {
         const cssPath = 'src/css/main.css';
         const distDir = 'styles';
         const outputPath = path.join(distDir, 'fg-grid.min.css');
 
+        // Create the output directory if it doesn't exist
+        fs.mkdirSync(distDir, { recursive: true });
+
+        // Read the original CSS file
         const css = fs.readFileSync(cssPath, 'utf-8');
-        const minified = new CleanCSS().minify(css).styles;
+
+        // Perform simple CSS minification:
+        // - remove comments
+        // - remove unnecessary whitespace, tabs, and newlines
+        // - tighten up spacing around { } : ;
+        const minified = css
+          .replace(/\/\*[\s\S]*?\*\//g, '') // remove /* comments */
+          .replace(/\s{2,}/g, ' ')         // collapse multiple spaces into one
+          .replace(/\n/g, '')              // remove all line breaks
+          .replace(/\s*{\s*/g, '{')        // remove space around {
+          .replace(/\s*}\s*/g, '}')        // remove space around }
+          .replace(/\s*;\s*/g, ';')        // remove space around ;
+          .replace(/\s*:\s*/g, ':')        // remove space around :
+          .trim();                         // remove leading/trailing spaces
+
+        // Write the minified CSS to the output file
         fs.writeFileSync(outputPath, minified);
 
-        console.log('✅ CSS minified to ' + outputPath);
+        console.log('✅ Simple CSS minified to ' + outputPath);
       }
     }
   ],

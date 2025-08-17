@@ -723,6 +723,10 @@
 
       if (me.columnResizing) return;
 
+      me.bodyEl.querySelectorAll(`.${ROW_HOVER}`).forEach(el => {
+        el.classList.remove(ROW_HOVER);
+      });
+
       event.target.classList.add(ROW_HOVER);
 
       event.target.addEventListener('mouseleave', me.onRowMouseLeave.bind(this), {

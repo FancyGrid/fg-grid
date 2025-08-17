@@ -139,6 +139,8 @@
       me.activeCell && me.initKeyNavigation();
 
       me.ons();
+
+      me.onReady?.(me);
     }
     initContainer(renderTo){
       const me = this;
@@ -452,7 +454,12 @@
 
       const storeConfig = {
         data: structuredClone(config.data),
-        defaultRowGroupSort: config.defaultRowGroupSort || me.defaultRowGroupSort
+        defaultRowGroupSort: config.defaultRowGroupSort || me.defaultRowGroupSort,
+        onChange(params) {
+          if(params.value !== params.oldValue){
+            me.onChange?.(params);
+          }
+        }
       };
 
       if(rowGroups.length){
